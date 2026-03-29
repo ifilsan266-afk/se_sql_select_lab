@@ -1,39 +1,76 @@
-# STEP 1A
-# Import SQL Library and Pandas
+import sqlite3
+import pandas as pd
 
-# STEP 1B
-# Connect to the database
-conn = None
+# ----------------------------------------
+# STEP 1: Connect to SQLite database
+# ----------------------------------------
+conn = sqlite3.connect("data.sqlite")
 
 
-# STEP 2
-# Replace None with your code
-df_first_five = None
+# ----------------------------------------
+# STEP 2: Read employees (basic query)
+# ----------------------------------------
+df_employees = pd.read_sql("""
+SELECT employeeNumber, lastName
+FROM employees;
+""", conn)
 
-# STEP 3
-# Replace None with your code
-df_five_reverse = None
+print("=== Employees (First 5 Rows) ===")
+print(df_employees.head())
+print("\n")
 
-# STEP 4
-# Replace None with your code
-df_alias = None
 
-# STEP 5
-# Replace None with your code
-df_executive = None
+# ----------------------------------------
+# STEP 3: Reverse column selection
+# ----------------------------------------
+df_employees_reverse = pd.read_sql("""
+SELECT lastName, employeeNumber
+FROM employees;
+""", conn)
 
-# STEP 6
-# Replace None with your code
-df_name_length = None
+print("=== Employees (Reversed Columns) ===")
+print(df_employees_reverse.head())
+print("\n")
 
-# STEP 7
-# Replace None with your code
-df_short_title = None
 
-# STEP 8
-# Replace None with your code
-sum_total_price = None
+# ----------------------------------------
+# STEP 4: Orders date breakdown (FIXED)
+# ----------------------------------------
+df_orders_date = pd.read_sql("""
+SELECT 
+    orderDate,
+    strftime('%d', orderDate) AS day,
+    strftime('%m', orderDate) AS month,
+    strftime('%Y', orderDate) AS year
+FROM orders;
+""", conn)
 
-# STEP 9
-# Replace None with your code
-df_day_month_year = None
+print("=== Orders (Day, Month, Year) ===")
+print(df_orders_date.head())
+print("\n")
+
+
+# ----------------------------------------
+# STEP 5: Example join (orders + orderDetails)
+# ----------------------------------------
+df_join = pd.read_sql("""
+SELECT 
+    o.orderNumber,
+    o.orderDate,
+    od.productCode,
+    od.quantityOrdered,
+    od.priceEach
+FROM orders o
+JOIN orderDetails od
+    ON o.orderNumber = od.orderNumber;
+""", conn)
+
+print("=== Orders Joined with Order Details ===")
+print(df_join.head())
+print("\n")
+
+
+# ----------------------------------------
+# STEP 6: Close connection
+# ----------------------------------------
+conn.close()
