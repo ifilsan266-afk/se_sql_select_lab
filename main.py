@@ -1,42 +1,82 @@
 import sqlite3
 import pandas as pd
 
-# ----------------------------------------
-# STEP 1: Connect to SQLite database
-# ----------------------------------------
 conn = sqlite3.connect("data.sqlite")
 
-
 # ----------------------------------------
-# STEP 2: Read employees (basic query)
+# Step 1: First five employees
 # ----------------------------------------
-df_employees = pd.read_sql("""
+df_first_five = pd.read_sql("""
 SELECT employeeNumber, lastName
-FROM employees;
+FROM employees
+LIMIT 5;
 """, conn)
 
-print("=== Employees (First 5 Rows) ===")
-print(df_employees.head())
-print("\n")
-
 
 # ----------------------------------------
-# STEP 3: Reverse column selection
+# Step 2: Reverse columns
 # ----------------------------------------
-df_employees_reverse = pd.read_sql("""
+df_five_reverse = pd.read_sql("""
 SELECT lastName, employeeNumber
+FROM employees
+LIMIT 5;
+""", conn)
+
+
+# ----------------------------------------
+# Step 3: Alias example
+# ----------------------------------------
+df_alias = pd.read_sql("""
+SELECT lastName AS surname, employeeNumber AS id
+FROM employees
+LIMIT 5;
+""", conn)
+
+
+# ----------------------------------------
+# Step 4: Executive employees (example filter)
+# ----------------------------------------
+df_executive = pd.read_sql("""
+SELECT *
+FROM employees
+WHERE jobTitle LIKE '%Executive%';
+""", conn)
+
+
+# ----------------------------------------
+# Step 5: Name length
+# ----------------------------------------
+df_name_length = pd.read_sql("""
+SELECT lastName, LENGTH(lastName) AS name_length
 FROM employees;
 """, conn)
 
-print("=== Employees (Reversed Columns) ===")
-print(df_employees_reverse.head())
-print("\n")
+
+# ----------------------------------------
+# Step 6: Short titles
+# ----------------------------------------
+df_short_title = pd.read_sql("""
+SELECT jobTitle
+FROM employees
+WHERE LENGTH(jobTitle) < 20;
+""", conn)
 
 
 # ----------------------------------------
-# STEP 4: Orders date breakdown (FIXED)
+# Step 7: Total price from orderDetails
 # ----------------------------------------
-df_orders_date = pd.read_sql("""
+df_total_price = pd.read_sql("""
+SELECT quantityOrdered * priceEach AS total_price
+FROM orderDetails;
+""", conn)
+
+sum_total_price = df_total_price["total_price"].sum()
+
+
+# ----------------------------------------
+# Step 8: Date breakdown
+# ----------------------------------------
+df_day_month_year = pd.read_sql("""
 SELECT 
     orderDate,
     strftime('%d', orderDate) AS day,
@@ -45,32 +85,5 @@ SELECT
 FROM orders;
 """, conn)
 
-print("=== Orders (Day, Month, Year) ===")
-print(df_orders_date.head())
-print("\n")
 
-
-# ----------------------------------------
-# STEP 5: Example join (orders + orderDetails)
-# ----------------------------------------
-df_join = pd.read_sql("""
-SELECT 
-    o.orderNumber,
-    o.orderDate,
-    od.productCode,
-    od.quantityOrdered,
-    od.priceEach
-FROM orders o
-JOIN orderDetails od
-    ON o.orderNumber = od.orderNumber;
-""", conn)
-
-print("=== Orders Joined with Order Details ===")
-print(df_join.head())
-print("\n")
-
-
-# ----------------------------------------
-# STEP 6: Close connection
-# ----------------------------------------
 conn.close()
